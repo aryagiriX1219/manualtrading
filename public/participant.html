@@ -434,17 +434,32 @@ async function pollState(){
 
 async function pollLB(){
   try{
-    const r=await fetch('/api/leaderboard');
-    const board=await r.json();
-    const el=document.getElementById('lb-list');
-    if(!board.length){ el.innerHTML='<div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">No participants yet</div>'; return; }
-    el.innerHTML=board.slice(0,10).map((p,i)=>{
+    const r = await fetch('/api/leaderboard');
+    const board = await r.json();
+
+    // UPDATE MY OWN PNL
+    const me = board.find(p => p.name === pname);
+    if(me){
+      totalPnl = me.totalPnl || 0;
+      updateStatsUI();
+    }
+
+    const el = document.getElementById('lb-list');
+
+    if(!board.length){
+      el.innerHTML = '<div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">No participants yet</div>';
+      return;
+    }
+
+    el.innerHTML = board.slice(0,10).map((p,i)=>{
       const rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
       const pc=p.totalPnl>=0?'up':'dn';
       const sg=p.totalPnl>=0?'+':'';
       const hl=p.name===pname?'background:rgba(0,245,195,0.07);border-radius:8px;padding:0 6px;':'';
+
       return '<div class="lb-row" style="'+hl+'"><span class="lb-rk">'+rk+'</span><span class="lb-nm">'+p.name+(p.name===pname?' ◀':'')+' </span><span class="lb-pnl '+pc+'">'+sg+'₹'+Math.round(p.totalPnl).toLocaleString()+'</span></div>';
     }).join('');
+
   }catch(e){}
 }
 
