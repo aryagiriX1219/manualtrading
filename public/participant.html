@@ -406,7 +406,7 @@ async function submitOrder(){
 
 // ── POLLING ──
 function startPolling(){
-  setInterval(pollState,2000);
+  setInterval(pollState,1000);
   setInterval(pollLB,5000);
   pollLB();
 }
@@ -423,8 +423,16 @@ async function pollState(){
       document.getElementById('round-badge').textContent='ROUND '+s.currentRound;
     }
     if(s.prices) updateTicker(s.prices);
-    if(s.timerActive&&!lastTimerActive){
-      resetPanel(); startTimer(100);
+    if(s.timerActive && !lastTimerActive){
+  resetPanel();
+
+  const elapsed = Math.floor(
+    (Date.now() - s.roundStartTime) / 1000
+  );
+
+  const remaining = Math.max(0, 100 - elapsed);
+
+  startTimer(remaining);
       if(s.currentImage) document.getElementById('img-area').innerHTML='<img src="'+s.currentImage+'" alt="Round">';
     }
     if(!s.timerActive&&lastTimerActive){ stopTimer(); lockPanel(); }
