@@ -263,6 +263,7 @@ app.post('/api/admin/start-round', async (req, res) => {
     gameState.stockName        = round.stockName;
     gameState.ticker           = round.ticker;
     gameState.timerActive      = true;
+    gameState.roundStartTime = Date.now();
     gameState.gameActive       = true;
 
     setTimeout(async () => {
