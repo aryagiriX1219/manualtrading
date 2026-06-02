@@ -216,6 +216,26 @@ await sheets.spreadsheets.values.clear({
       valueInputOption: 'RAW',
       resource: { values: allRows }
     });
+
+    await sheets.spreadsheets.values.append({
+  spreadsheetId:1bcMLwLGJrVGWuzXmj0Tpr_SuB3RnGachJizkpxM0ACw,
+  range: 'Memory!A:J',
+  valueInputOption: 'RAW',
+  resource: {
+    values: Object.values(participants).map(p => [
+      new Date().toISOString(),
+      p.id,
+      p.name,
+      p.email || '',
+      10000 + p.totalPnl,
+      p.position || 'FLAT',
+      p.units || 0,
+      p.entryPrice || 0,
+      p.totalPnl || 0,
+      p.round || 0
+    ])
+  }
+});
   } catch (e) {
     console.error('Full sync error:', e.message);
   }
