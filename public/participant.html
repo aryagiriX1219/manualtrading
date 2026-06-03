@@ -54,7 +54,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
 .up{color:var(--teal)} .dn{color:var(--red)} .nt{color:var(--dim)}
 
 /* BODY */
-.body { flex:1; display:grid; grid-template-columns:55fr 45fr; overflow:hidden; min-height:0; }
+.body { flex:1; display:grid; grid-template-columns:58fr 42fr; overflow:hidden; min-height:0; }
 
 /* LEFT: IMAGE */
 .img-panel { background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
@@ -154,13 +154,81 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
 .res-detail { font-size:14px; color:var(--dim); line-height:2.2; white-space:pre; margin-bottom:24px; }
 .res-close { background:var(--bg3); border:1px solid var(--border); color:#fff; padding:14px 40px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; }
 
+
+/* LEADERBOARD BUTTON + SHEET */
+.lb-btn{
+  background:var(--bg3);
+  color:var(--teal);
+  border:1px solid var(--border);
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  display:none;
+}
+
+.lb-sheet{
+  position:fixed;
+  inset:0;
+  background:rgba(4,8,14,0.72);
+  z-index:250;
+  display:none;
+  align-items:flex-end;
+}
+
+.lb-sheet.on{ display:flex; }
+
+.lb-sheet-inner{
+  width:100%;
+  background:var(--bg2);
+  border-top-left-radius:20px;
+  border-top-right-radius:20px;
+  border-top:1px solid rgba(0,245,195,0.2);
+  padding:14px;
+  max-height:70vh;
+  overflow:auto;
+}
+
+.lb-sheet-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.lb-close{
+  background:var(--bg3);
+  color:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
 /* MOBILE */
 @media(max-width:700px){
+  .topbar { padding:10px 14px; gap:10px; }
   .body { grid-template-columns:1fr; grid-template-rows:auto 1fr; }
-  .img-panel { border-right:none; border-bottom:1px solid var(--border); min-height:200px; max-height:45vw; }
+  .img-panel { border-right:none; border-bottom:1px solid var(--border); min-height:260px; max-height:58vw; }
+  .img-area { padding:10px; }
   .ctrl-panel { overflow-y:auto; }
-  /* Fixed timer on mobile */
-  .timer-block { position:sticky; top:0; z-index:10; }
+  .timer-block { position:sticky; top:0; z-index:10; padding:14px 16px; }
+  .trade-area { padding:14px 14px 18px; gap:14px; }
+  .stats-grid { gap:8px; }
+  .stat-box { padding:12px 6px; }
+  .order-cost-box { padding:12px 14px; }
+  .btn-submit { padding:18px; font-size:18px; min-height:58px; }
+  .ticker { padding:6px 10px; gap:16px; }
+  .tk { min-width:58px; }
+  .tk-name { font-size:9px; }
+  .tk-price { font-size:13px; }
+  .tk-chg { font-size:9px; }
+  .lb-box.desktop-only { display:none; }
+  .lb-btn { display:inline-flex; align-items:center; justify-content:center; }
+}
+@media(min-width:701px){
+  .lb-btn{ display:none; }
 }
 </style>
 </head>
@@ -201,6 +269,20 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
   </div>
 </div>
 
+
+<!-- LEADERBOARD SHEET -->
+<div class="lb-sheet" id="lb-sheet">
+  <div class="lb-sheet-inner">
+    <div class="lb-sheet-head">
+      <div style="font-size:18px;font-weight:900;color:var(--teal);">Leaderboard</div>
+      <button class="lb-close" onclick="closeLeaderboard()">✕</button>
+    </div>
+    <div class="lb-box" id="lb-list-sheet">
+      <div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">Loading...</div>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
 
@@ -214,6 +296,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
       <div class="lbl">TOTAL PnL</div>
       <div class="val" id="portfolio-val">₹0</div>
     </div>
+    <button class="lb-btn" onclick="openLeaderboard()">Leaderboard</button>
   </div>
 
   <!-- TICKER -->
@@ -313,7 +396,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
         <!-- LEADERBOARD -->
         <div>
           <div class="sec-lbl">🏆 LIVE LEADERBOARD</div>
-          <div class="lb-box" id="lb-list">
+          <div class="lb-box desktop-only" id="lb-list">
             <div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">Loading...</div>
           </div>
         </div>
@@ -452,22 +535,52 @@ async function pollLB(){
       updateStatsUI();
     }
 
-    const el = document.getElementById('lb-list');
+    const rows = !board.length
+      ? '<div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">No participants yet</div>'
+      : board.slice(0,10).map((p,i)=>{
+          const rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+          const pc=p.totalPnl>=0?'up':'dn';
+          const sg=p.totalPnl>=0?'+':'';
+          const hl=p.name===pname?'background:rgba(0,245,195,0.07);border-radius:8px;padding:0 6px;':'';
+          return '<div class="lb-row" style="'+hl+'"><span class="lb-rk">'+rk+'</span><span class="lb-nm">'+p.name+(p.name===pname?' ◀':'')+' </span><span class="lb-pnl '+pc+'">'+sg+'₹'+Math.round(p.totalPnl).toLocaleString()+'</span></div>';
+        }).join('');
 
+    const el = document.getElementById('lb-list');
+    if(el) el.innerHTML = rows;
+
+    const elSheet = document.getElementById('lb-list-sheet');
+    if(elSheet) elSheet.innerHTML = rows;
+
+  }catch(e){}
+}
+
+
+function openLeaderboard(){
+  document.getElementById('lb-sheet').classList.add('on');
+  renderLeaderboardSheet();
+}
+
+function closeLeaderboard(){
+  document.getElementById('lb-sheet').classList.remove('on');
+}
+
+async function renderLeaderboardSheet(){
+  try{
+    const r = await fetch('/api/leaderboard');
+    const board = await r.json();
+    const el = document.getElementById('lb-list-sheet');
+    if(!el) return;
     if(!board.length){
       el.innerHTML = '<div style="font-size:13px;color:var(--dim);text-align:center;padding:12px;">No participants yet</div>';
       return;
     }
-
     el.innerHTML = board.slice(0,10).map((p,i)=>{
       const rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
       const pc=p.totalPnl>=0?'up':'dn';
       const sg=p.totalPnl>=0?'+':'';
       const hl=p.name===pname?'background:rgba(0,245,195,0.07);border-radius:8px;padding:0 6px;':'';
-
       return '<div class="lb-row" style="'+hl+'"><span class="lb-rk">'+rk+'</span><span class="lb-nm">'+p.name+(p.name===pname?' ◀':'')+' </span><span class="lb-pnl '+pc+'">'+sg+'₹'+Math.round(p.totalPnl).toLocaleString()+'</span></div>';
     }).join('');
-
   }catch(e){}
 }
 
