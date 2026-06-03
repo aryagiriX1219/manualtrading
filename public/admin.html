@@ -267,7 +267,7 @@ async function startRound(n) {
       dirEl.textContent = gs.correctDirection || '—';
       dirEl.style.color = gs.correctDirection === 'BUY' ? 'var(--teal)' : gs.correctDirection === 'SELL' ? 'var(--red)' : '#fff';
 
-      toast('Round ' + n + ' started — 100s timer running');
+      toast('Round ' + n + ' started — 30s timer running');
     } else {
       toast('Error: ' + (d.message || 'Failed to start round'));
       btn.disabled = false;
