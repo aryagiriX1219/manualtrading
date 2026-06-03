@@ -291,7 +291,7 @@ app.post('/api/admin/start-round', async (req, res) => {
   });
 
   await syncAllToSheet();
-}, 100000);
+}, 30000);
 
     res.json({ success: true, gameState });
   } catch (e) {
