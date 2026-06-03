@@ -44,14 +44,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
 .tq-portfolio .lbl { font-size:11px; color:var(--dim); letter-spacing:1px; text-align:right; }
 .tq-portfolio .val { font-size:22px; font-weight:900; color:var(--teal); text-align:right; }
 
-/* TICKER */
-.ticker { background:var(--bg3); border-bottom:1px solid var(--border); padding:8px 20px; display:flex; gap:28px; overflow-x:auto; flex-shrink:0; }
-.ticker::-webkit-scrollbar { display:none; }
-.tk { display:flex; flex-direction:column; align-items:center; min-width:68px; }
-.tk-name { font-size:10px; color:var(--dim); letter-spacing:1px; }
-.tk-price { font-size:14px; font-weight:700; }
-.tk-chg { font-size:10px; }
-.up{color:var(--teal)} .dn{color:var(--red)} .nt{color:var(--dim)}
 
 /* BODY */
 .body { flex:1; display:grid; grid-template-columns:58fr 42fr; overflow:hidden; min-height:0; }
@@ -214,7 +206,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
   .topbar .tq-portfolio .val { font-size:20px; }
 
   .body { grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr); }
-  .img-panel { border-right:none; border-bottom:1px solid var(--border); min-height:180px; max-height:42vw; }
+  .img-panel { border-right:none; border-bottom:1px solid var(--border); min-height:150px; max-height:34vw; }
   .img-area { padding:8px; }
 
   .ctrl-panel { overflow-y:auto; -webkit-overflow-scrolling:touch; }
@@ -225,22 +217,22 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
   .timer-ring { width:74px; height:74px; }
   .timer-num { font-size:24px; }
 
-  .trade-area { padding:12px 12px 36px; gap:12px; }
+  .trade-area { padding:10px 12px 80px; gap:10px; }
   .sec-lbl { font-size:10px; margin-bottom:6px; letter-spacing:1.7px; }
 
   .dir-grid { gap:8px; }
-  .btn-dir { padding:14px 8px; font-size:18px; min-height:52px; border-radius:12px; }
+  .btn-dir { padding:12px 8px; font-size:17px; min-height:48px; border-radius:12px; }
 
   .qty-row { gap:8px; }
-  .qty-btn { width:46px; height:46px; font-size:24px; border-radius:10px; }
-  .qty-display { font-size:24px; padding:10px; border-radius:10px; }
+  .qty-btn { width:44px; height:44px; font-size:22px; border-radius:10px; }
+  .qty-display { font-size:22px; padding:10px; border-radius:10px; }
   .qty-note { font-size:10px; margin-top:2px; }
 
-  .order-cost-box { padding:12px 14px; border-radius:10px; }
+  .order-cost-box { padding:11px 14px; border-radius:10px; }
   .oc-lbl { font-size:12px; }
   .oc-val { font-size:18px; }
 
-  .btn-submit { padding:14px 16px; font-size:16px; min-height:52px; border-radius:12px; }
+  .btn-submit { padding:13px 14px; font-size:15px; min-height:48px; border-radius:12px; }
   .status-msg { font-size:12px; min-height:16px; }
 
   .stats-grid { gap:8px; }
@@ -250,16 +242,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
 
   .lb-box.desktop-only { display:none; }
   .lb-btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 12px; font-size:12px; }
-
-  .ticker { padding:6px 10px; gap:12px; }
-  .tk { min-width:54px; }
-  .tk-name { font-size:8px; }
-  .tk-price { font-size:12px; }
-  .tk-chg { font-size:8px; }
 }
 @media(min-width:701px){
   .lb-btn{ display:none; }
 }
+
 </style>
 </head>
 <body>
@@ -327,15 +314,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
       <div class="val" id="portfolio-val">₹0</div>
     </div>
     <button class="lb-btn" onclick="openLeaderboard()">Leaderboard</button>
-  </div>
-
-  <!-- TICKER -->
-  <div class="ticker">
-    <div class="tk"><div class="tk-name">AGW</div><div class="tk-price nt" id="t-agw">₹420</div><div class="tk-chg nt" id="tc-agw">—</div></div>
-    <div class="tk"><div class="tk-name">NVT</div><div class="tk-price nt" id="t-nvt">₹1,240</div><div class="tk-chg nt" id="tc-nvt">—</div></div>
-    <div class="tk"><div class="tk-name">SPK</div><div class="tk-price nt" id="t-spk">₹680</div><div class="tk-chg nt" id="tc-spk">—</div></div>
-    <div class="tk"><div class="tk-name">CVT</div><div class="tk-price nt" id="t-cvt">₹4,200</div><div class="tk-chg nt" id="tc-cvt">—</div></div>
-    <div class="tk"><div class="tk-name">MRI</div><div class="tk-price nt" id="t-mri">₹890</div><div class="tk-chg nt" id="tc-mri">—</div></div>
   </div>
 
   <!-- BODY -->
@@ -440,7 +418,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'S
 let pid=null, pname='', selDirection=null, lastTimerActive=false;
 let totalPnl=0, timerInterval=null, timerSec=0, currentRound=0;
 let qtyVal=1;
-let prevPrices={agw:420,nvt:1240,spk:680,cvt:4200,mri:890};
 const CIRCUM=239;
 
 // ── REGISTER ──
@@ -535,7 +512,6 @@ async function pollState(){
       document.getElementById('round-lbl').textContent='ROUND '+s.currentRound+' / 40';
       document.getElementById('round-badge').textContent='ROUND '+s.currentRound;
     }
-    if(s.prices) updateTicker(s.prices);
     if(s.timerActive && !lastTimerActive){
   resetPanel();
 
@@ -614,21 +590,6 @@ async function renderLeaderboardSheet(){
   }catch(e){}
 }
 
-function updateTicker(prices){
-  ['agw','nvt','spk','cvt','mri'].forEach(k=>{
-    if(prices[k]===undefined)return;
-    const curr=prices[k],prev=prevPrices[k],diff=curr-prev;
-    const pct=((diff/prev)*100).toFixed(1);
-    const pe=document.getElementById('t-'+k),ce=document.getElementById('tc-'+k);
-    if(!pe||!ce)return;
-    pe.textContent='₹'+curr.toLocaleString();
-    const cl=diff>0?'up':diff<0?'dn':'nt';
-    pe.className='tk-price '+cl;
-    ce.textContent=diff===0?'—':(diff>0?'+':'')+pct+'%';
-    ce.className='tk-chg '+cl;
-    prevPrices[k]=curr;
-  });
-}
 
 // ── TIMER ──
 function startTimer(sec){
