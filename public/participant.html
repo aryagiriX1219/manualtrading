@@ -519,7 +519,7 @@ async function pollState(){
     (Date.now() - s.roundStartTime) / 1000
   );
 
-  const remaining = Math.max(0, 100 - elapsed);
+  const remaining = Math.max(0, 30 - elapsed);
 
   startTimer(remaining);
       if(s.currentImage) document.getElementById('img-area').innerHTML='<img src="'+s.currentImage+'" alt="Round">';
